@@ -1,4 +1,4 @@
-# food_app
+# slike
 
 A new Flutter project.
 
