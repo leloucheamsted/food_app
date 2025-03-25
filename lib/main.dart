@@ -87,7 +87,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 Future<void> main() async {
+  // Ensure Flutter is initialized first
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase with a small delay to allow Flutter to fully initialize
+  await Future.delayed(Duration(milliseconds: 100));
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   printLog("Enter Main");

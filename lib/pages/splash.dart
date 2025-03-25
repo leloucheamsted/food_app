@@ -33,7 +33,7 @@ class _SplashState extends State<Splash> {
     super.initState();
     homeProvider = Provider.of<HomeProvider>(context, listen: false);
     splashdata = Provider.of<GeneralProvider>(context, listen: false);
-    _controller = VideoPlayerController.asset("assets/images/splashvideo.mp4");
+    _controller = VideoPlayerController.asset("assets/images/splashvideo1.mp4");
     _controller.initialize().then((_) {
       printLog("Enter Play");
       if (!mounted) return;
