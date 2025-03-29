@@ -201,6 +201,7 @@ flutter:
   assets:
     - assets/appicon/
     - assets/images/
+    - assets/icons/
     - assets/locales/en.json
     - assets/locales/hi.json
     - assets/locales/af.json

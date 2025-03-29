@@ -76,6 +76,16 @@ class GeneralProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<LoginModel> loginWithNam(String email, String password) async {
+    loading = true;
+    loginModel = await ApiService().loginWithName(email, password).then((value) {
+      loading = false;
+      notifyListeners();
+      return value;
+    });
+    return loginModel;
+  }
+
   setLoading(loading) {
     isProgressLoading = loading;
     notifyListeners();

@@ -2,7 +2,7 @@ import Cocoa
 import FlutterMacOS
 import Firebase
 
-@NSApplicationMain
+@main
 class AppDelegate: FlutterAppDelegate {
   override func applicationDidFinishLaunching(_ notification: Notification) {
     FirebaseApp.configure()

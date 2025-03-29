@@ -215,6 +215,23 @@ class ApiService {
     return loginModel;
   }
 
+  // login with username and password
+  Future<LoginModel> loginWithName(
+    String email,
+    String password,
+  
+  ) async {
+    LoginModel loginModel;
+    String apiname = "login?type=4";
+    Response response = await dio.post(
+      '$baseurl$apiname',
+      data: FormData.fromMap({'email': email, 'password': password}),
+    );
+
+    loginModel = LoginModel.fromJson(response.data);
+    return loginModel;
+  }
+
   Future<LoginModel> otpLogin(String type, String mobile) async {
     LoginModel loginModel;
     String apiname = "login";
