@@ -4,6 +4,8 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart'
+    show AccessToken, FacebookAuth, LoginResult, LoginStatus;
 import 'package:slike/model/loginmodel.dart';
 import 'package:slike/utils/constant.dart';
 import 'package:slike/utils/dimens.dart';
@@ -301,7 +303,9 @@ class _LoginState extends State<Login> {
                           // Navigate to the sign up page
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const SignUp()),
+                            MaterialPageRoute(
+                              builder: (context) => const SignUp(),
+                            ),
                           );
                         },
                         child: const Text(
@@ -374,76 +378,10 @@ class _LoginState extends State<Login> {
                   ),
 
                   const SizedBox(height: 16),
-                  
+
                   // Social login - Google
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Google login
-                        gmailLogin();
-                      },
-                      icon: Image.asset(
-                        "assets/images/ic_google.png",
-                        height: 24,
-                        width: 24,
-                      ),
-                      label: const Text(
-                        "Google",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
+
                   // Social login - Apple
-                  Platform.isIOS || Platform.isMacOS
-                  ? SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // Apple login
-                        signInWithApple();
-                      },
-                      icon: Image.asset(
-                        "assets/images/ic_apple.png",
-                        height: 24,
-                        width: 24,
-                      ),
-                      label: const Text(
-                        "Apple",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                    ),
-                  )
-                  : const SizedBox.shrink(),
-                  
-                  Platform.isIOS || Platform.isMacOS
-                  ? const SizedBox(height: 16)
-                  : const SizedBox.shrink(),
 
                   // Loading indicator
                   Consumer<GeneralProvider>(
@@ -757,12 +695,12 @@ class _LoginState extends State<Login> {
       }
     }
   }
-  
+
   // Handle Forgot Password
   void _handleForgotPassword() {
     // Create a text controller for email input
     final TextEditingController emailController = TextEditingController();
-    
+
     // Show dialog to get email address
     showDialog(
       context: context,
@@ -784,10 +722,7 @@ class _LoginState extends State<Login> {
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(7),
-                  border: Border.all(
-                    color: const Color(0xFFFFD700),
-                    width: 1,
-                  ),
+                  border: Border.all(color: const Color(0xFFFFD700), width: 1),
                   color: Colors.black.withOpacity(0.3),
                 ),
                 child: TextField(
@@ -821,53 +756,53 @@ class _LoginState extends State<Login> {
                 // Validate email
                 if (emailController.text.isEmpty) {
                   Utils.showSnackbar(
-                    context, 
-                    "Please enter your email address", 
-                    false
+                    context,
+                    "Please enter your email address",
+                    false,
                   );
                   return;
                 }
-                
+
                 if (!EmailValidator.validate(emailController.text)) {
                   Utils.showSnackbar(
-                    context, 
-                    "Please enter a valid email address", 
-                    false
+                    context,
+                    "Please enter a valid email address",
+                    false,
                   );
                   return;
                 }
-                
+
                 // Close dialog
                 Navigator.of(context).pop();
-                
+
                 // Show loading
                 generalProvider.setLoading(true);
-                
+
                 // Call password reset API (this would typically be implemented in apiservice.dart)
                 // For now, we'll show a success message after a short delay
                 Future.delayed(const Duration(seconds: 2), () {
                   generalProvider.setLoading(false);
                   Utils.showSnackbar(
-                    context, 
-                    "Password reset link sent to ${emailController.text}", 
-                    false
+                    context,
+                    "Password reset link sent to ${emailController.text}",
+                    false,
                   );
                 });
-                
+
                 // In a real implementation, you would call a password reset API:
                 // try {
                 //   await apiService.resetPassword(emailController.text);
                 //   generalProvider.setLoading(false);
                 //   Utils.showSnackbar(
-                //     context, 
-                //     "Password reset link sent to ${emailController.text}", 
+                //     context,
+                //     "Password reset link sent to ${emailController.text}",
                 //     false
                 //   );
                 // } catch (e) {
                 //   generalProvider.setLoading(false);
                 //   Utils.showSnackbar(
-                //     context, 
-                //     "Failed to send reset link. Please try again.", 
+                //     context,
+                //     "Failed to send reset link. Please try again.",
                 //     false
                 //   );
                 // }
@@ -883,7 +818,7 @@ class _LoginState extends State<Login> {
       },
     );
   }
-  
+
   // Email/Password Login Implementation
   Future<void> _loginWithEmailPassword() async {
     // Validate input fields
@@ -891,22 +826,22 @@ class _LoginState extends State<Login> {
       Utils.showSnackbar(context, "Please enter your username", false);
       return;
     }
-    
+
     if (passwordController.text.isEmpty) {
       Utils.showSnackbar(context, "Please enter your password", false);
       return;
     }
-    
+
     try {
       // Show loading indicator
       generalProvider.setLoading(true);
-      
+
       // Call the login API
       LoginModel result = await generalProvider.loginWithNam(
         usernameController.text,
         passwordController.text,
       );
-      
+
       // Check if login was successful
       if (result.status == 200 && result.result!.isNotEmpty) {
         // Save user data
@@ -926,9 +861,9 @@ class _LoginState extends State<Login> {
           isAdsFree: result.result?[0].adsFree.toString(),
           isDownload: result.result?[0].isDownload.toString(),
         );
-        
+
         // Update Firebase data if user has a Firebase ID
-        if (result.result?[0].firebaseId != null && 
+        if (result.result?[0].firebaseId != null &&
             (result.result?[0].firebaseId?.isNotEmpty ?? false)) {
           await FirebaseFirestore.instance
               .collection(FirestoreConstants.pathUserCollection)
@@ -936,8 +871,7 @@ class _LoginState extends State<Login> {
               .update({
                 FirestoreConstants.appchannelid:
                     result.result?[0].channelId.toString(),
-                FirestoreConstants.appuserid:
-                    result.result?[0].id.toString(),
+                FirestoreConstants.appuserid: result.result?[0].id.toString(),
                 FirestoreConstants.deviceToken: strDeviceToken,
               })
               .then((value) => printLog("User Updated"))
@@ -948,7 +882,7 @@ class _LoginState extends State<Login> {
                 );
               });
         }
-        
+
         // Navigate to home screen
         if (!mounted) return;
         generalProvider.setLoading(false);
@@ -961,75 +895,61 @@ class _LoginState extends State<Login> {
         if (!mounted) return;
         generalProvider.setLoading(false);
         Utils.showSnackbar(
-          context, 
-          result.message ?? "Login failed. Please check your credentials.", 
-          false
+          context,
+          result.message ?? "Login failed. Please check your credentials.",
+          false,
         );
       }
     } catch (e) {
       printLog("Login Error: $e");
       generalProvider.setLoading(false);
       if (!mounted) return;
-      Utils.showSnackbar(context, "Failed to sign in. Please try again.", false);
+      Utils.showSnackbar(
+        context,
+        "Failed to sign in. Please try again.",
+        false,
+      );
     }
   }
-  
+
   // Facebook Login Implementation
   Future<void> _facebookLogin() async {
     try {
       // Show loading indicator
       generalProvider.setLoading(true);
-      
-      // Initialize a FacebookAuth instance
-      // Note: You need to add flutter_facebook_auth package to your pubspec.yaml
-      // and configure your app in Facebook Developer Console
-      
-      // For demonstration purposes, we'll use Firebase Auth with Facebook provider
-      // This is a common approach that integrates well with Firebase
-      
-      // 1. Create a Facebook Login instance
-      // final LoginResult result = await FacebookAuth.instance.login();
-      
-      // 2. Check if login was successful
-      // if (result.status == LoginStatus.success) {
-      //   // Get access token
-      //   final AccessToken accessToken = result.accessToken!;
-      
-      //   // Create a credential from the access token
-      //   final OAuthCredential credential = FacebookAuthProvider.credential(
-      //     accessToken.token,
-      //   );
-      
-      //   // Sign in to Firebase with the Facebook credential
-      //   final userCredential = await auth.signInWithCredential(credential);
-      //   final User? user = userCredential.user;
-      
-      //   if (user != null) {
-      //     String firebaseId = user.uid;
-      //     String email = user.email ?? "";
-      //     String displayName = user.displayName ?? "";
-      //     String photoURL = user.photoURL ?? "";
-      
-      //     // Check if user exists in Firestore
-      //     await _checkUserInFirestore(firebaseId, email, displayName, photoURL);
-      
-      //     // Navigate user to the main app
-      //     checkAndNavigate(
-      //       email,
-      //       displayName,
-      //       photoURL,
-      //       "",
-      //       "4", // Type 4 for Facebook
-      //       "",
-      //       "",
-      //       firebaseId,
-      //     );
-      //   }
-      // }
-      
+
+      final LoginResult result =
+          await FacebookAuth.instance
+              .login(); // by default we request the email and the public profile
+
+      if (result.status == LoginStatus.success) {
+        // Get access token
+        final AccessToken accessToken = result.accessToken!;
+
+        // Create a credential from the access token
+        final OAuthCredential credential = FacebookAuthProvider.credential(
+          accessToken.tokenString,
+        );
+
+        // Sign in to Firebase with the Facebook credential
+        final userCredential = await auth.signInWithCredential(credential);
+        final User? user = userCredential.user;
+
+        if (user != null) {
+          String firebaseId = user.uid;
+          String email = user.email ?? "";
+          String displayName = user.displayName ?? "";
+          String photoURL = user.photoURL ?? "";
+
+          // Check if user exists in Firestore
+          await _checkUserInFirestore(firebaseId, email, displayName, photoURL);
+
+          // Navigate user to the main app
+        }
+      }
+
       // For now, we'll show a message that this feature is coming soon
-      if (!mounted) return;
-      Utils.showSnackbar(context, "Facebook login will be available soon", false);
+
       generalProvider.setLoading(false);
     } catch (e) {
       // Handle errors
@@ -1039,21 +959,22 @@ class _LoginState extends State<Login> {
       Utils.showSnackbar(context, "Failed to sign in with Facebook", false);
     }
   }
-  
+
   // Helper method to check if user exists in Firestore
   Future<void> _checkUserInFirestore(
-    String firebaseId, 
-    String email, 
-    String displayName, 
-    String photoURL
+    String firebaseId,
+    String email,
+    String displayName,
+    String photoURL,
   ) async {
-    final QuerySnapshot result = await FirebaseFirestore.instance
-        .collection(FirestoreConstants.pathUserCollection)
-        .where(FirestoreConstants.userid, isEqualTo: firebaseId)
-        .get();
-    
+    final QuerySnapshot result =
+        await FirebaseFirestore.instance
+            .collection(FirestoreConstants.pathUserCollection)
+            .where(FirestoreConstants.userid, isEqualTo: firebaseId)
+            .get();
+
     final List<DocumentSnapshot> documents = result.docs;
-    
+
     if (documents.isEmpty) {
       // Create new user in Firestore
       await FirebaseFirestore.instance
@@ -1065,10 +986,13 @@ class _LoginState extends State<Login> {
             FirestoreConstants.email: email,
             FirestoreConstants.deviceToken: strDeviceToken,
             FirestoreConstants.name: displayName,
-            FirestoreConstants.profileurl: photoURL.isNotEmpty ? photoURL : Constant.userPlaceholder,
+            FirestoreConstants.profileurl:
+                photoURL.isNotEmpty ? photoURL : Constant.userPlaceholder,
             FirestoreConstants.userid: firebaseId,
-            FirestoreConstants.createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
-            FirestoreConstants.bioData: "Hey! there I'm using ${Constant.appName} app.",
+            FirestoreConstants.createdAt:
+                DateTime.now().millisecondsSinceEpoch.toString(),
+            FirestoreConstants.bioData:
+                "Hey! there I'm using ${Constant.appName} app.",
             FirestoreConstants.username: "",
             FirestoreConstants.mobileNumber: "",
             FirestoreConstants.chattingWith: null,

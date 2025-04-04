@@ -300,5 +300,20 @@
 
 	<key>io.flutter.embedded_views_preview</key>
 	<string>YES</string>
+	    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>fb674229308497752</string>
+        </array>
+      </dict>
+    </array>
+	<key>FacebookAppID</key>
+     <string>674229308497752</string>
+    <key>FacebookClientToken</key>
+     <string>e5ce2c470642176332ec9052d7f3daee</string>
+   <key>FacebookDisplayName</key>
+     <string>slike_test</string>
 </dict>
 </plist>

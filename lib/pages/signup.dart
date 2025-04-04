@@ -1,4 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
+import 'dart:io';
+
+import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
@@ -23,6 +26,8 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   // Controllers for carousel
+  late GeneralProvider generalProvider;
+
   final PageController _pageController = PageController();
   int _currentPage = 0;
   final int _numPages = 5;
@@ -37,11 +42,15 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final TextEditingController _bioController = TextEditingController();
+  final TextEditingController _countryController = TextEditingController();
   late LatestFeedProvider latestFeedProvider;
   late ScrollController _categoryScrollController;
 
   // Date of birth
   DateTime? _selectedDate;
+
+  // Selected country
+  Country? _selectedCountry;
 
   // Password visibility
   bool _isPasswordVisible = false;
@@ -57,6 +66,7 @@ class _SignUpState extends State<SignUp> {
       listen: false,
     );
     _categoryScrollController = ScrollController();
+    generalProvider = Provider.of<GeneralProvider>(context, listen: false);
   }
 
   @override
@@ -68,7 +78,8 @@ class _SignUpState extends State<SignUp> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _bioController.dispose();
+    _countryController.dispose();
+    super.dispose();
     super.dispose();
   }
 
@@ -147,6 +158,10 @@ class _SignUpState extends State<SignUp> {
 
       case 2:
         // Profile details validation username , first name, secon name , email and password
+        if (_userNameController.text.isEmpty) {
+          Utils.showSnackbar(context, "Please enter a username", false);
+          return false;
+        }
         if (_firstNameController.text.isEmpty) {
           Utils.showSnackbar(context, "Please enter your first name", false);
           return false;
@@ -181,10 +196,7 @@ class _SignUpState extends State<SignUp> {
           );
           return false;
         }
-        if (_userNameController.text.isEmpty) {
-          Utils.showSnackbar(context, "Please enter a username", false);
-          return false;
-        }
+
         if (_selectedDate == null) {
           Utils.showSnackbar(
             context,
@@ -219,16 +231,74 @@ class _SignUpState extends State<SignUp> {
     await Future.delayed(const Duration(seconds: 2));
 
     generalProvider.setLoading(false);
+    //  show all the data
+    printLog("Username: ${_userNameController.text}");
+    printLog("Email: ${_emailController.text}");
+    printLog("Password: ${_passwordController.text}");
+    printLog("First Name: ${_firstNameController.text}");
+    printLog("Last Name: ${_lastNameController.text}");
+    printLog("Email: ${_emailController.text}");
+    printLog("Password: ${_passwordController.text}");
+    printLog(
+      "Date of Birth: ${DateFormat('yyyy-MM-dd').format(_selectedDate!)}",
+    );
+    printLog("Country: ${_selectedCountry?.name}");
+    printLog("Feature: $feature");
+    printLog("Bio: ${_bioController.text}");
+    printLog("Selected Categories: ${latestFeedProvider.selectedCategoryIds}");
+    printLog("Selected Country: ${_selectedCountry?.name}");
+    // singup
+    // get device type
+    // get device token
+    late int deviceType;
+    if (Platform.isAndroid) {
+      deviceType = 0;
+    } else if (Platform.isIOS) {
+      deviceType = 1;
+    } else {
+      deviceType = 2;
+    }
+    // get device token
+    await generalProvider
+        .signupProvider(
+          _emailController.text,
+          _firstNameController.text,
+          _lastNameController.text,
+          _userNameController.text,
+          _selectedCountry?.countryCode ?? "",
+          _passwordController.text,
+          deviceType,
+          'device-token',
+          DateFormat('yyyy-MM-dd').format(_selectedDate!).toString(),
+          _selectedCountry?.name ?? "",
+        )
+        .then((value) {
+          if (value.status == 200) {
+            // Show success message
+            // Navigate to the bottom bar (home)
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const Bottombar()),
+              (route) => false,
+            );
+          } else {
+            // Show error message
+          }
+        })
+        .catchError((error) {
+          generalProvider.setLoading(false);
+          Utils.showSnackbar(context, error.toString(), false);
+        });
 
     // Show success message
-    Utils.showSnackbar(context, "Account created successfully!", false);
+    // Utils.showSnackbar(context, "Account created successfully!", false);
 
-    // Navigate to the bottom bar (home)
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const Bottombar()),
-      (route) => false,
-    );
+    // // Navigate to the bottom bar (home)
+    // Navigator.pushAndRemoveUntil(
+    //   context,
+    //   MaterialPageRoute(builder: (context) => const Bottombar()),
+    //   (route) => false,
+    // );
   }
 
   @override
@@ -288,7 +358,7 @@ class _SignUpState extends State<SignUp> {
               ],
             ),
             Positioned(
-              bottom: 50,
+              bottom: 30,
               left: MediaQuery.of(context).size.width / 2 - 50,
               right: 0,
               child: SmoothPageIndicator(
@@ -1047,8 +1117,70 @@ class _SignUpState extends State<SignUp> {
             ],
           ),
           const SizedBox(height: 20),
-
+          // country picker
+          MyText(
+            text: "Country",
+            maxline: 1,
+            fontwaight: FontWeight.w500,
+            fontsizeNormal: 16,
+            color: Colors.white,
+            textalign: TextAlign.left,
+            overflow: TextOverflow.ellipsis,
+            fontstyle: FontStyle.normal,
+            multilanguage: false,
+          ),
+          GestureDetector(
+            onTap: () {
+              showCountryPicker(
+                context: context,
+                showPhoneCode:
+                    true, // optional. Shows phone code before the country name.
+                onSelect: (Country country) {
+                  setState(() {
+                    _selectedCountry = country;
+                  });
+                },
+              );
+            },
+            child: Container(
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(7),
+                border: Border.all(color: const Color(0xFFFFD700), width: 1),
+                color: Colors.black.withOpacity(0.3),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      _selectedCountry?.name ?? "Country",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    SvgPicture.asset(
+                      "assets/icons/arrow-down.svg",
+                      height: 20,
+                      width: 20,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFFFFD700),
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           // Email
+          const SizedBox(height: 20),
+
           MyText(
             text: "Email",
             maxline: 1,

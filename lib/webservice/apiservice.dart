@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:slike/model/addremovelikedislikemodel.dart';
@@ -93,6 +94,7 @@ import '../model/feed_detail_and_related_content_model.dart';
 class ApiService {
   String baseurl = Constant().baseurl;
   late Dio dio;
+  String apiUrl = 'http://localhost:8000/api/';
 
   ApiService() {
     dio = Dio();
@@ -216,16 +218,55 @@ class ApiService {
   }
 
   // login with username and password
-  Future<LoginModel> loginWithName(
-    String email,
-    String password,
-  
-  ) async {
+  Future<LoginModel> loginWithName(String email, String password) async {
     LoginModel loginModel;
+    bool isValidEmail(String email) {
+      final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+      return emailRegex.hasMatch(email);
+    }
+
     String apiname = "login?type=4";
     Response response = await dio.post(
-      '$baseurl$apiname',
-      data: FormData.fromMap({'email': email, 'password': password}),
+      '$apiUrl$apiname',
+      data:
+          isValidEmail(email)
+              ? FormData.fromMap({'email': email, 'password': password})
+              : FormData.fromMap({'channel_name': email, 'password': password}),
+    );
+
+    loginModel = LoginModel.fromJson(response.data);
+    return loginModel;
+  }
+
+  // sign up
+  Future<LoginModel> signup(
+    String email,
+    String username,
+    String firstname,
+    String lastname,
+    String birthday,
+    String password,
+    int devicetype,
+    String devicetoken,
+    String countrycode,
+    String countryName,
+  ) async {
+    LoginModel loginModel;
+    String apiname = "signup";
+    Response response = await dio.post(
+      '$apiUrl$apiname',
+      data: FormData.fromMap({
+        'email': email,
+        'username': username,
+        'password': password,
+        'device_type': devicetype,
+        'device_token': 'devicetoken',
+        'country_code': countrycode,
+        'first_name': firstname,
+        'last_name': lastname,
+        'birthday': birthday,
+        'country': countryName,
+      }),
     );
 
     loginModel = LoginModel.fromJson(response.data);
@@ -423,7 +464,7 @@ class ApiService {
     ProfileModel profileModel;
     String apiname = "get_profile";
     Response response = await dio.post(
-      '$baseurl$apiname',
+      '$apiUrl$apiname',
       data: FormData.fromMap({
         'user_id': Constant.userID == null ? "0" : (Constant.userID ?? ""),
         'to_user_id': touserid,

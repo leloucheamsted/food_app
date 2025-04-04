@@ -78,11 +78,44 @@ class GeneralProvider extends ChangeNotifier {
 
   Future<LoginModel> loginWithNam(String email, String password) async {
     loading = true;
-    loginModel = await ApiService().loginWithName(email, password).then((value) {
+    loginModel = await ApiService().loginWithName(email, password).then((
+      value,
+    ) {
       loading = false;
       notifyListeners();
       return value;
     });
+    return loginModel;
+  }
+
+  // singup
+  Future<LoginModel> signupProvider(
+    String email,
+    String firstName,
+    String lastName,
+    String username,
+    String countryCode,
+    String password,
+    int devicetype,
+    String devicetoken,
+    String birthday,
+    String countryName,
+  ) async {
+    loading = true;
+    loginModel = await ApiService().signup(
+      email,
+      username,
+      firstName,
+      lastName,
+      birthday,
+      password,
+      devicetype,
+      devicetoken,
+      countryCode,
+      countryName,
+    );
+    loading = false;
+    notifyListeners();
     return loginModel;
   }
 

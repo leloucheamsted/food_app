@@ -156,6 +156,8 @@ dependencies:
   # flutterwave_standard: ^1.0.8
   youtube_player_flutter: ^9.1.1
   flutterwave_standard_smart: ^1.0.4
+  flutter_facebook_auth: ^7.1.1
+  country_picker: ^2.0.27
 
 
 
